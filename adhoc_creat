@@ -1,0 +1,59 @@
+#!/bin/bash
+
+cp /etc/network/interfaces /etc/network/interfaces.backup
+
+echo -n "Interface name:"
+read name_interface
+
+echo -n "IP address:"
+read address_ip
+
+echo "interface configuring"
+echo "
+# interfaces(5) file used by ifup(8) and ifdown(8)
+
+# Please note that this file is written to be used with dhcpcd
+# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
+
+# Include files from /etc/network/interfaces.d:
+# source-directory /etc/network/interfaces.d
+
+auto lo
+iface lo inet loopback
+
+auto $name_interface
+iface $name_interface inet static
+        wireless-mode ad-hoc
+        wireless-channel 8
+        wireless-essid 'PiSDN'
+        address $address_ip
+        netmask 255.255.255.0
+
+allow-hotplug $name_interface
+iface $name_interface inet manual
+    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+
+#allow-hotplug wlan1
+#iface wlan1 inet manual
+#    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+" > /etc/network/interfaces
+
+systemctl stop NetworkManager.service
+ip link set $name_interface down
+systemctl restart networking.service
+
+#setting default gateway
+echo -n "Gateway:"
+read default_gateway
+echo $default_gateway
+route add default gw $default_gateway $name_interface
+
+#setting default dns server
+echo -n "DNS Server:"
+read default_dns_server
+echo $default_dns_server
+echo "
+name_servers=$default_dns_server
+" >> /etc/resolvconf.conf
+
+systemctl restart networking.service
