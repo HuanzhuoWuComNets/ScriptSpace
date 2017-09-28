@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -n "Local network address: "
+read local_network
+
+echo -n "Public interface: "
+read public_interface
+
+echo "masquerading... ..."
+
+iptables -t nat -A POSTROUTING -s $local_network -o $public_interface -j MASQUERADE
+iptables -A FORWARD -s $local_network -o $public_interface -j ACCEPT
+iptables -A FORWARD -d $local_network -m state --state ESTABLISHED,RELATED -i $public_interface -j ACCEPT
