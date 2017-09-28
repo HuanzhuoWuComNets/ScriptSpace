@@ -29,9 +29,9 @@ iface $name_interface inet static
         address $address_ip
         netmask 255.255.255.0
 
-allow-hotplug $name_interface
-iface $name_interface inet manual
-    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+#allow-hotplug $name_interface
+#iface $name_interface inet manual
+#    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 
 #allow-hotplug wlan1
 #iface wlan1 inet manual
@@ -39,7 +39,10 @@ iface $name_interface inet manual
 " > /etc/network/interfaces
 
 systemctl stop NetworkManager.service
+systemctl disable NetworkManager.service
 ip link set $name_interface down
+systemctl daemon-reload
+systemctl enable networking.service
 systemctl restart networking.service
 
 #setting default gateway
